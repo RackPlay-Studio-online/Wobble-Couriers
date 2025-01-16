@@ -6,22 +6,24 @@ public class PlayerHandIK : MonoBehaviour
 {
     public TwoBoneIKConstraint rightBoneIKConstraint;
     public TwoBoneIKConstraint leftBoneIKConstraint;
-
     public List<Transform> handTargets;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
         AssignHandTargets();
     }
 
-    private void Update() {
+    private void Update()
+    {
         AssignHandTargets();
     }
 
     void AssignHandTargets()
     {
-        rightBoneIKConstraint.data.target.position = handTargets[0].position;
-        leftBoneIKConstraint.data.target.position = handTargets[1].position;
+        if (handTargets.Count >= 2)
+        {
+            rightBoneIKConstraint.data.target.position = handTargets[0].position;
+            leftBoneIKConstraint.data.target.position = handTargets[1].position;
+        }
     }
 }
