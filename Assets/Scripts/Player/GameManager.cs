@@ -1,42 +1,43 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
+
 public class GameManager : MonoBehaviour
 {
-    public GameObject playerPrefab;  // Assign player prefab in Inspector
-    public Transform spawnPoint1, spawnPoint2;  // Set spawn positions
-    public PropIK propIK;  // Reference to PropIK script attached to the glass object
+    public GameObject player1; // Pre-placed Player 1 object
+    public GameObject player2; // Pre-placed Player 2 object
 
-    [SerializeField]
-    private List<PlayerInput> players = new List<PlayerInput>();
+    private int playersJoined = 0; // Track the number of players joined
 
     public void OnPlayerJoined(PlayerInput playerInput)
     {
-        players.Add(playerInput);
-        playerInput.transform.SetParent(null);
-
-        // Assign spawn positions
-        if (players.Count == 1)
+        if (playersJoined == 0) // First player joins
         {
-            playerInput.transform.position = spawnPoint1.position;
-            AssignHandIK(playerInput.gameObject, propIK.player1HandIK);
+            AssignControlToPlayer(playerInput, player1);
         }
-        else if (players.Count == 2)
+        else if (playersJoined == 1) // Second player joins
         {
-            playerInput.transform.position = spawnPoint2.position;
-            AssignHandIK(playerInput.gameObject, propIK.player2HandIK);
+            AssignControlToPlayer(playerInput, player2);
         }
-
-        Debug.Log($"Player {players.Count} Joined with {playerInput.currentControlScheme}");
-        Debug.Log($"Spawning Player {players.Count} at {playerInput.transform.position}");
+        else
+        {
+            Debug.LogWarning("Max players already joined!");
+        }
     }
 
-    void AssignHandIK(GameObject player, List<Transform> handTargets)
+    private void AssignControlToPlayer(PlayerInput playerInput, GameObject targetPlayer)
     {
-        PlayerHandIK handIK = player.GetComponent<PlayerHandIK>();
-        if (handIK != null && handTargets.Count >= 2)
+        // Assign the control to the target player
+        playerInput.transform.SetParent(targetPlayer.transform);
+        playerInput.transform.localPosition = Vector3.zero;
+        playerInput.transform.localRotation = Quaternion.identity;
+
+        PlayerInput targetInput = targetPlayer.GetComponent<PlayerInput>();
+        if (targetInput != null)
         {
-            handIK.handTargets = handTargets;
+            targetInput.SwitchCurrentControlScheme(playerInput.currentControlScheme, playerInput.devices.ToArray());
         }
+
+        Debug.Log($"Player {playersJoined + 1} assigned to {targetPlayer.name} with {playerInput.currentControlScheme}");
+        playersJoined++;
     }
 }
